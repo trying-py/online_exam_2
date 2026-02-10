@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}تایید پیامکی{% endblock %}
+
+{% block content %}
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <h2 class="h4 mb-3">تایید پیامکی</h2>
+      <p class="text-muted">کد ۶ رقمی ارسال‌شده به شماره شما را وارد کنید. (اعتبار: {{ ttl }} دقیقه)</p>
+
+      <form method="post" class="mt-3">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">کد تایید</label>
+          <input class="form-control" name="code" inputmode="numeric" maxlength="6" placeholder="مثلاً 123456" required>
+        </div>
+        <button class="btn btn-primary" type="submit">تایید</button>
+        <a class="btn btn-outline-secondary" href="{% url 'verify_pending' uidb64=uidb64 %}">بازگشت</a>
+      </form>
+
+      <hr>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'resend_sms' uidb64=uidb64 %}">ارسال مجدد کد</a>
+    </div>
+  </div>
+{% endblock %}

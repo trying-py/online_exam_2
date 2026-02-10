@@ -1,0 +1,4 @@
+Django==5.2.8
+psycopg2-binary>=2.9
+kavenegar>=1.1
+python-dotenv>=1.0

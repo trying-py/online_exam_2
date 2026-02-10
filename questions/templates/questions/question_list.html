@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}سوالات{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">سوالات</h1>
+    {% if user.is_authenticated and user.role == 'instructor' %}
+      <a href="{% url 'questions:question_create' %}" class="btn btn-primary">افزودن سوال</a>
+    {% endif %}
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>متن</th>
+              <th>آزمون</th>
+              <th>نوع</th>
+              <th>امتیاز</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for q in questions %}
+              <tr>
+                <td>{{ q.id }}</td>
+                <td><a class="text-decoration-none" href="{% url 'questions:question_detail' q.id %}">{{ q.text|truncatechars:70 }}</a></td>
+                <td>{{ q.exam.title }}</td>
+                <td><span class="badge text-bg-info">{{ q.get_question_type_display }}</span></td>
+                <td>{{ q.score }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-center text-muted py-4">سوالی وجود ندارد.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% endblock %}

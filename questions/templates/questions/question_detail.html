@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}جزئیات سوال{% endblock %}
+
+{% block content %}
+  <a class="btn btn-outline-secondary mb-3" href="{% url 'questions:question_list' %}">بازگشت</a>
+
+  <div class="card shadow-sm">
+    <div class="card-body p-4">
+      <h2 class="h5 mb-2">سوال #{{ question.id }}</h2>
+      <div class="text-muted mb-2">آزمون: <a href="{% url 'exams:exam_detail' question.exam.id %}">{{ question.exam.title }}</a></div>
+      <div class="mb-3">{{ question.text }}</div>
+
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        <span class="badge text-bg-info">{{ question.get_question_type_display }}</span>
+        <span class="badge text-bg-light border">امتیاز: {{ question.score }}</span>
+      </div>
+
+      {% if question.question_type == 'mcq' %}
+        <h3 class="h6">گزینه‌ها</h3>
+        <ul class="list-group">
+          {% for c in choices %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span>{{ c.text }}</span>
+              {% if c.is_correct %}<span class="badge text-bg-success">درست</span>{% endif %}
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">هیچ گزینه‌ای ثبت نشده است.</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8" />
+    <title>پاسخ سوال</title>
+    <style>
+        body {
+            font-family: "Vazir", sans-serif;
+            background: #f7f9fc;
+            color: #34495e;
+            direction: rtl;
+            padding: 30px;
+            max-width: 700px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .question-text {
+            font-weight: bold;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .answer-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            font-size: 16px;
+            min-height: 80px;
+        }
+        a.back-link {
+            display: block;
+            margin-top: 25px;
+            text-align: center;
+            color: #2980b9;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a.back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>پاسخ به سوال</h1>
+    <div class="question-text">{{ question.text }}</div>
+
+    <div class="answer-content">
+        {% if answer %}
+            {% if question.question_type == 'mcq' %}
+                گزینه انتخاب شده: {{ answer.selected_choice.text }}
+            {% elif question.question_type == 'short' %}
+                {{ answer.text }}
+            {% elif question.question_type == 'file' %}
+                <a href="{{ answer.file_upload.url }}" target="_blank">دانلود فایل پاسخ</a>
+            {% endif %}
+        {% else %}
+            <p>شما هنوز به این سوال پاسخ نداده‌اید.</p>
+        {% endif %}
+    </div>
+
+    <a href="{% url 'question_list' %}" class="back-link">بازگشت به لیست سوالات</a>
+</body>
+</html>

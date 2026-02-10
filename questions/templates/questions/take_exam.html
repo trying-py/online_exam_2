@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}شرکت در آزمون{% endblock %}
+
+{% block content %}
+  <a href="{% url 'exams:exam_detail' exam.id %}" class="btn btn-outline-secondary mb-3">بازگشت به آزمون</a>
+
+  <div class="card p-3 mb-3 shadow-sm">
+    <h1 class="h4 mb-1">{{ exam.title }}</h1>
+    <div class="text-muted small">موضوع: {{ exam.subject }} • مدت: {{ exam.duration_minutes }} دقیقه</div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for question in questions %}
+      <div class="card p-3 mb-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-start">
+          <h2 class="h6 mb-1">{{ forloop.counter }}. {{ question.text }}</h2>
+          <span class="badge text-bg-light border">{{ question.score }} امتیاز</span>
+        </div>
+
+        {% if question.question_type == 'short' %}
+          <textarea name="question_{{ question.id }}" class="form-control mt-2" rows="3" placeholder="پاسخ خود را وارد کنید..."></textarea>
+
+        {% elif question.question_type == 'mcq' %}
+          <div class="mt-2">
+            {% for choice in question.choices.all %}
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="choice_{{ choice.id }}" value="{{ choice.id }}">
+                <label class="form-check-label" for="choice_{{ choice.id }}">{{ choice.text }}</label>
+              </div>
+            {% endfor %}
+          </div>
+
+        {% elif question.question_type == 'file' %}
+          <input type="file" name="question_{{ question.id }}" class="form-control mt-2">
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <button class="btn btn-success btn-lg w-100">ارسال پاسخ‌ها</button>
+  </form>
+{% endblock %}
