@@ -1,0 +1,196 @@
+[1mdiff --cc accounts/admin.py[m
+[1mindex 8c38f3f,72ab60a..0000000[m
+[1m--- a/accounts/admin.py[m
+[1m+++ b/accounts/admin.py[m
+[36m@@@ -1,3 -1,16 +1,21 @@@[m
+  from django.contrib import admin[m
+[32m++<<<<<<< HEAD[m
+[32m +[m
+[32m +# Register your models here.[m
+[32m++=======[m
+[32m+ from django.contrib.auth.admin import UserAdmin[m
+[32m+ from .models import User[m
+[32m+ [m
+[32m+ [m
+[32m+ @admin.register(User)[m
+[32m+ class CustomUserAdmin(UserAdmin):[m
+[32m+     list_display = ([m
+[32m+         'username', 'email', 'phone', 'role',[m
+[32m+         'is_email_verified', 'is_sms_verified',[m
+[32m+         'is_active', 'is_staff'[m
+[32m+     )[m
+[32m+ [m
+[32m+     fieldsets = UserAdmin.fieldsets + ([m
+[32m+         ('Role & Verification', {'fields': ('role', 'phone', 'is_email_verified', 'is_sms_verified')}),[m
+[32m+     )[m
+[32m++>>>>>>> 6896dfc (final project)[m
+[1mdiff --cc accounts/tests.py[m
+[1mindex 7ce503c,3390a04..0000000[m
+[1m--- a/accounts/tests.py[m
+[1m+++ b/accounts/tests.py[m
+[36m@@@ -1,3 -1,51 +1,57 @@@[m
+[32m++<<<<<<< HEAD[m
+[32m +from django.test import TestCase[m
+[32m +[m
+[32m +# Create your tests here.[m
+[32m++=======[m
+[32m+ from django.test import TestCase, override_settings[m
+[32m+ from django.urls import reverse[m
+[32m+ from django.core import mail[m
+[32m+ from django.contrib.auth.tokens import default_token_generator[m
+[32m+ from django.utils.http import urlsafe_base64_encode[m
+[32m+ from django.utils.encoding import force_bytes[m
+[32m+ [m
+[32m+ from .models import User[m
+[32m+ [m
+[32m+ [m
+[32m+ @override_settings([m
+[32m+     EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',[m
+[32m+     SMS_PROVIDER='console',[m
+[32m+ )[m
+[32m+ class EmailAndSmsVerificationTests(TestCase):[m
+[32m+     def test_signup_creates_inactive_user_and_sends_email(self):[m
+[32m+         resp = self.client.post(reverse('signup'), {[m
+[32m+             'username': 'alice',[m
+[32m+             'email': 'alice@example.com',[m
+[32m+             'phone': '09121234567',[m
+[32m+             'role': 'student',[m
+[32m+             'password1': 'StrongPass123!@#',[m
+[32m+             'password2': 'StrongPass123!@#',[m
+[32m+         })[m
+[32m+         self.assertEqual(resp.status_code, 302)[m
+[32m+         user = User.objects.get(username='alice')[m
+[32m+         self.assertFalse(user.is_active)[m
+[32m+         self.assertFalse(user.is_email_verified)[m
+[32m+         self.assertFalse(user.is_sms_verified)[m
+[32m+         self.assertIsNotNone(user.sms_code)[m
+[32m+         self.assertEqual(len(mail.outbox), 1)[m
+[32m+ [m
+[32m+     def test_verify_link_activates_user(self):[m
+[32m+         user = User.objects.create_user([m
+[32m+             username='bob',[m
+[32m+             email='bob@example.com',[m
+[32m+             phone='09121234567',[m
+[32m+             password='StrongPass123!@#',[m
+[32m+             role='student',[m
+[32m+             is_active=False,[m
+[32m+             is_email_verified=False,[m
+[32m+             is_sms_verified=False,[m
+[32m+         )[m
+[32m+         uid = urlsafe_base64_encode(force_bytes(user.pk))[m
+[32m+         token = default_token_generator.make_token(user)[m
+[32m+ [m
+[32m+         resp = self.client.get(reverse('verify_email', kwargs={'uidb64': uid, 'token': token}))[m
+[32m+         self.assertEqual(resp.status_code, 200)[m
+[32m+         user.refresh_from_db()[m
+[32m+         self.assertTrue(user.is_active)[m
+[32m+         self.assertTrue(user.is_email_verified)[m
+[32m++>>>>>>> 6896dfc (final project)[m
+[1mdiff --cc exams/__pycache__/__init__.cpython-313.pyc[m
+[1mindex bc96d24,4365a06..0000000[m
+Binary files differ
+[1mdiff --cc exams/__pycache__/admin.cpython-313.pyc[m
+[1mindex 7113779,391efdd..0000000[m
+Binary files differ
+[1mdiff --cc exams/__pycache__/apps.cpython-313.pyc[m
+[1mindex 862298d,6d6382c..0000000[m
+Binary files differ
+[1mdiff --cc exams/__pycache__/forms.cpython-313.pyc[m
+[1mindex 1a379cc,9bc698d..0000000[m
+Binary files differ
+[1mdiff --cc exams/__pycache__/models.cpython-313.pyc[m
+[1mindex 7729768,ff4a807..0000000[m
+Binary files differ
+[1mdiff --cc exams/__pycache__/urls.cpython-313.pyc[m
+[1mindex 7ada7f2,9dacf0d..0000000[m
+Binary files differ
+[1mdiff --cc exams/__pycache__/views.cpython-313.pyc[m
+[1mindex 5db38ce,82cd98d..0000000[m
+Binary files differ
+[1mdiff --cc exams/forms.py[m
+[1mindex 24edce7,2f45954..0000000[m
+[1m--- a/exams/forms.py[m
+[1m+++ b/exams/forms.py[m
+[36m@@@ -6,12 -6,11 +6,19 @@@[m [mclass ExamForm(forms.ModelForm)[m
+      class Meta:[m
+          model = Exam[m
+          fields = ['title', 'subject', 'total_score',[m
+[32m++<<<<<<< HEAD[m
+[32m +                  'start_time', 'duration_minutes', 'instructor'][m
+[32m++=======[m
+[32m+                   'start_time', 'duration_minutes'][m
+[32m++>>>>>>> 6896dfc (final project)[m
+          widgets = {[m
+              'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'عنوان آزمون'}),[m
+              'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'موضوع آزمون'}),[m
+              'total_score': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),[m
+              'start_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),[m
+              'duration_minutes': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),[m
+[32m++<<<<<<< HEAD[m
+[32m +            'instructor': forms.Select(attrs={'class': 'form-select'}),[m
+[32m++=======[m
+[32m++>>>>>>> 6896dfc (final project)[m
+          }[m
+[1mdiff --cc exams/migrations/__pycache__/0001_initial.cpython-313.pyc[m
+[1mindex c15158f,49e3c80..0000000[m
+Binary files differ
+[1mdiff --cc exams/migrations/__pycache__/0002_alter_exam_instructor.cpython-313.pyc[m
+[1mindex 617e92f,fd97d4d..0000000[m
+Binary files differ
+[1mdiff --cc exams/migrations/__pycache__/0003_alter_exam_instructor.cpython-313.pyc[m
+[1mindex a8174bf,cc67f0d..0000000[m
+Binary files differ
+[1mdiff --cc exams/migrations/__pycache__/0004_alter_exam_instructor.cpython-313.pyc[m
+[1mindex d3bbd65,babd757..0000000[m
+Binary files differ
+[1mdiff --cc exams/migrations/__pycache__/0005_alter_exam_instructor.cpython-313.pyc[m
+[1mindex 636ffcf,8b00f10..0000000[m
+Binary files differ
+[1mdiff --cc exams/migrations/__pycache__/__init__.cpython-313.pyc[m
+[1mindex df6b36b,cfeb446..0000000[m
+Binary files differ
+[1mdiff --cc exams/models.py[m
+[1mindex 9903fc1,b813939..0000000[m
+[1m--- a/exams/models.py[m
+[1m+++ b/exams/models.py[m
+[36m@@@ -1,5 -1,32 +1,36 @@@[m
+  from django.db import models[m
+[32m++<<<<<<< HEAD[m
+[32m +from django.contrib.auth.models import User[m
+[32m++=======[m
+[32m+ from django.conf import settings[m
+[32m+ from django.utils import timezone[m
+[32m+ [m
+[32m+ [m
+[32m+ class ExamQuerySet(models.QuerySet):[m
+[32m+     def by_instructor(self, instructor):[m
+[32m+         return self.filter(instructor=instructor)[m
+[32m+ [m
+[32m+     def upcoming(self):[m
+[32m+         return self.filter(start_time__gte=timezone.now()).order_by('start_time')[m
+[32m+ [m
+[32m+     def past(self):[m
+[32m+         return self.filter(start_time__lt=timezone.now()).order_by('-start_time')[m
+[32m+ [m
+[32m+ [m
+[32m+ class ExamManager(models.Manager):[m
+[32m+     def get_queryset(self):[m
+[32m+         return ExamQuerySet(self.model, using=self._db)[m
+[32m+ [m
+[32m+     def by_instructor(self, instructor):[m
+[32m+         return self.get_queryset().by_instructor(instructor)[m
+[32m+ [m
+[32m+     def upcoming(self):[m
+[32m+         return self.get_queryset().upcoming()[m
+[32m+ [m
+[32m+     def past(self):[m
+[32m+         return self.get_queryset().past()[m
+[32m+ [m
+[32m++>>>>>>> 6896dfc (final project)[m
+  [m
+  class Exam(models.Model):[m
+      title = models.CharField(max_length=100)[m
+[36m@@@ -7,8 -34,14 +38,19 @@@[m
+      total_score = models.IntegerField()[m
+      start_time = models.DateTimeField()[m
+     
